@@ -1,60 +1,144 @@
 package income_expense.example.income_expense.Fragments
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.income_expense.R
+import android.widget.DatePicker
+import android.widget.TimePicker
+import android.widget.Toast
+import com.example.income_expense.TransactionModel
+import com.example.income_expense.databinding.FragmentAddDataFragmentsBinding
+import income_expense.example.income_expense.DBHelper
+import java.text.SimpleDateFormat
+import java.util.Date
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [AddDataFragments.newInstance] factory method to
- * create an instance of this fragment.
- */
 class AddDataFragments : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    lateinit var binding: FragmentAddDataFragmentsBinding
+    var isExpence = 0
+    lateinit var dbHelper: DBHelper
+    lateinit var trans: TransactionModel
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_data_fragments, container, false)
+        binding = FragmentAddDataFragmentsBinding.inflate(layoutInflater)
+
+        initView()
+
+        dbHelper = DBHelper(context)
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddDataFragments.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddDataFragments().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun initView() {
+
+        binding.txtadddate.setOnClickListener {
+
+            var date = Date()
+
+            var format1 = SimpleDateFormat("dd-MM-YYYY")
+            var currentDate = format1.format(date)
+
+            var dates = currentDate.split("-")
+            binding.txtadddate.text = currentDate
+
+            var dialog =
+                DatePickerDialog(requireContext(), object : DatePickerDialog.OnDateSetListener {
+                    override fun onDateSet(p0: DatePicker?, p1: Int, p2: Int, p3: Int) {
+
+                        var Year = p1
+                        var Month = p2 + 1
+                        var Date = p3
+
+                        var selectedDate = "$p3-${(p2 + 1)}-$p1"
+                        binding.txtadddate.text = selectedDate
+                    }
+
+                }, dates[2].toInt(), dates[1].toInt() - 1, dates[0].toInt())
+            dialog.show()
+        }
+
+        binding.txttime.setOnClickListener {
+
+            var date = Date()
+
+            var format2 = SimpleDateFormat("hh:mm a")
+            var currentTime = format2.format(date)
+
+            binding.txttime.text = currentTime
+            var seleTime = currentTime
+
+            var dialog1 = TimePickerDialog(context, object : TimePickerDialog.OnTimeSetListener {
+                override fun onTimeSet(p0: TimePicker?, p1: Int, p2: Int) {
+
+                    var hour = p1
+                    var minute = p2
+                    var selectedTime = "$p1:$p2"
+                    binding.txttime.text = selectedTime
                 }
+
+            }, 10, 0, true)
+            dialog1.show()
+        }
+
+        binding.income.setOnClickListener {
+            isExpence = 0
+            binding.income.setCardBackgroundColor(Color.parseColor("#22c391"))
+            binding.expence.setCardBackgroundColor(Color.parseColor("#ffffff"))
+            binding.txtincome.setTextColor(Color.parseColor("#ffffff"))
+            binding.txtexpence.setTextColor(Color.parseColor("#707070"))
+        }
+        binding.expence.setOnClickListener {
+            isExpence = 1
+            binding.income.setCardBackgroundColor(Color.parseColor("#ffffff"))
+            binding.expence.setCardBackgroundColor(Color.parseColor("#F86C98"))
+            binding.txtexpence.setTextColor(Color.parseColor("#ffffff"))
+            binding.txtincome.setTextColor(Color.parseColor("#717171"))
+        }
+
+        dbHelper = DBHelper(context)
+        var list = dbHelper.getTransaction()
+
+        var income = 0
+        var expence = 0
+        for (trans in list) {
+            if (trans.isExpence == 0) {
+                income += trans.amount
+            } else {
+                expence += trans.amount
             }
+        }
+
+        binding.btnsubmit.setOnClickListener {
+            var amount = binding.edtamount.text.toString().toInt()
+            var category = binding.edtcategory.text.toString()
+            var note = binding.edtnotes.text.toString()
+            var date = binding.txtadddate.text.toString()
+            var month = binding.txtadddate.text.toString()
+            var year = binding.txtadddate.text.toString()
+
+            if (category.isEmpty() || note.isEmpty() || amount.toString().isEmpty()) {
+                Toast.makeText(context, "Please enter data", Toast.LENGTH_SHORT).show()
+            } else {
+                var model =
+                    TransactionModel(1, amount, category, note, isExpence, date, month, year)
+                dbHelper.addAmount(model)
+                binding.edtamount.setText("")
+                binding.edtcategory.setText("")
+                binding.edtnotes.setText("")
+
+            }
+        }
     }
+
 }

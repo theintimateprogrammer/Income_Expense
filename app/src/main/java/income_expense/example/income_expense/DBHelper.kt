@@ -4,13 +4,12 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import com.example.income_expense.Model.TransactionModel
 import com.example.income_expense.TransactionModel
 
 class DBHelper(
     context: Context?,
 
-) : SQLiteOpenHelper(context,"incomeexpense.db", null, 1) {
+    ) : SQLiteOpenHelper(context,"incomeexpense.db", null, 1) {
 
     var TABLE_NAME = "trans"
     var Id = "id"
