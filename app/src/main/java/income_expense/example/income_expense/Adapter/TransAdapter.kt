@@ -4,11 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.income_expense.R
 import com.example.income_expense.TransactionModel
 import com.example.income_expense.databinding.ItemtransactionBinding
+import java.util.Objects
 
 class TransAdapter    (update: (TransactionModel) -> Unit, delete:(Int) -> Unit) :RecyclerView.Adapter<TransAdapter.Transholder>(){
 
@@ -38,7 +42,7 @@ class TransAdapter    (update: (TransactionModel) -> Unit, delete:(Int) -> Unit)
 
 
     override fun onBindViewHolder(holder: Transholder, @SuppressLint("RecyclerView")position: Int) {
-        holder.binding.apply {
+         holder.binding.apply {
             translist.get(position).apply {
                 txtcategory.text = category
                 txtnotes.text = note
@@ -61,15 +65,38 @@ class TransAdapter    (update: (TransactionModel) -> Unit, delete:(Int) -> Unit)
             }
         }
 
+
+        holder.itemView.setOnLongClickListener(object : View.OnLongClickListener {
+            override fun onLongClick(p0: View?): Boolean {
+
+                var popupMenu = PopupMenu(context, holder.itemView)
+                popupMenu.menuInflater.inflate(R.menu.option_menu, popupMenu.menu)
+
+                popupMenu.setOnMenuItemClickListener(object : PopupMenu.OnMenuItemClickListener{
+                    override fun onMenuItemClick(p0: MenuItem?): Boolean {
+
+                        if (p0?.itemId == R.id.edit) {
+                            update.invoke(translist.get(position))
+                        }
+
+                        if (p0?.itemId == R.id.delete) {
+                            delete.invoke(translist.get(position).id)
+                        }
+                        return true
+                    }
+                })
+                popupMenu.show()
+                return true
+            }
+        })
     }
 
-    fun updateData(transactionModels: ArrayList<TransactionModel>) {
-        translist = transactionModels
-        notifyDataSetChanged()
-    }
-
-    fun settrans(translist: java.util.ArrayList<TransactionModel>) {
+    fun  settrans(translist:ArrayList<TransactionModel>) {
         this.translist = translist
     }
+fun  updateData(translist: ArrayList<TransactionModel>) {
+    this.translist = translist
+    notifyDataSetChanged()
+}
 
 }

@@ -38,7 +38,7 @@ class HomeFragments : Fragment() {
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
-            FragmentHomeFragmentsBinding.inflate(layoutInflater).also { binding = it }
+           binding =  FragmentHomeFragmentsBinding.inflate(layoutInflater)
 
             dbHelper = DBHelper(context)
             translist = dbHelper.getTransaction()
